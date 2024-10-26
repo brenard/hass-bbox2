@@ -1,4 +1,5 @@
 """Parent Entity."""
+
 from __future__ import annotations
 
 import logging
@@ -39,6 +40,7 @@ class BboxEntity(CoordinatorEntity[BboxDataUpdateCoordinator], Entity):
             "configuration_url": f"https://{coordinator.config_entry.data[CONF_HOST]}",
         }
 
+
 class BboxDeviceEntity(BboxEntity):
     """Base class for all device's entities connected to the Bbox"""
 
@@ -68,9 +70,7 @@ class BboxDeviceEntity(BboxEntity):
     @property
     def coordinator_data(self):
         """Return connecting status."""
-        for device in (
-            self.coordinator.data.get("devices", {}).get("hosts", {}).get("list", [])
-        ):
+        for device in self.coordinator.data.get("devices", {}).get("hosts", {}).get("list", []):
             if device["macaddress"] == self._device["macaddress"]:
                 return device
         return {}

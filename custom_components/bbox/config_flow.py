@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 import logging
+from collections.abc import Mapping
 from typing import Any
 
+import voluptuous as vol
 from bboxpy import Bbox
 from bboxpy.exceptions import BboxException, HttpRequestError
-import voluptuous as vol
-
 from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
@@ -23,14 +22,13 @@ from .const import (
     CONF_REFRESH_RATE,
     CONF_USE_TLS,
     DEFAULT_TITLE,
-    DOMAIN
+    DOMAIN,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class BaseConfigFlow:
-
     async def async_check_user_input(self, user_input: Mapping[str, Any] | None) -> str | None:
         """
         Check Bbox connection with user input
@@ -65,7 +63,6 @@ class BaseConfigFlow:
             self._errors["base"] = "unknown"
         return False
 
-
     @staticmethod
     def _get_config_schema(defaults=None, password_optional=False):
         """Get configuration schema"""
@@ -74,7 +71,8 @@ class BaseConfigFlow:
             {
                 vol.Required(CONF_HOST, default=defaults.get(CONF_HOST)): str,
                 (
-                    vol.Optional(CONF_PASSWORD) if password_optional
+                    vol.Optional(CONF_PASSWORD)
+                    if password_optional
                     else vol.Required(CONF_PASSWORD)
                 ): str,
                 vol.Required(CONF_USE_TLS, default=defaults.get(CONF_USE_TLS)): bool,
@@ -88,9 +86,7 @@ class ConfigFlow(BaseConfigFlow, config_entries.ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
-    async def async_step_user(
-        self, user_input: Mapping[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_user(self, user_input: Mapping[str, Any] | None = None) -> FlowResult:
         """Handle the initial step."""
         self._errors: dict[str, str] = {}
         if user_input:
@@ -101,9 +97,7 @@ class ConfigFlow(BaseConfigFlow, config_entries.ConfigFlow, domain=DOMAIN):
                 return self.async_create_entry(title=DEFAULT_TITLE, data=user_input)
 
         return self.async_show_form(
-            step_id="user",
-            data_schema=self._get_config_schema(),
-            errors=self._errors
+            step_id="user", data_schema=self._get_config_schema(), errors=self._errors
         )
 
     @staticmethod
@@ -122,9 +116,7 @@ class OptionsFlow(BaseConfigFlow, config_entries.OptionsFlow):
         """Initialize options flow."""
         self.config_entry = config_entry
 
-    async def async_step_init(
-        self, user_input: Mapping[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_init(self, user_input: Mapping[str, Any] | None = None) -> FlowResult:
         """Manage the options."""
         self._errors: dict[str, str] = {}
         if user_input:
@@ -134,20 +126,16 @@ class OptionsFlow(BaseConfigFlow, config_entries.OptionsFlow):
             serialnumber = await self.async_check_user_input(user_input)
             if serialnumber and not self._errors:
                 # update config entry
-                self.hass.config_entries.async_update_entry(
-                    self.config_entry,
-                    data=user_input
-                )
+                self.hass.config_entries.async_update_entry(self.config_entry, data=user_input)
                 # Finish
                 return self.async_create_entry(data=None)
 
         return self.async_show_form(
             step_id="init",
             data_schema=self._get_config_schema(
-                self.config_entry.data,
-                password_optional=self.config_entry.data.get(CONF_PASSWORD)
+                self.config_entry.data, password_optional=self.config_entry.data.get(CONF_PASSWORD)
             ),
-            errors=self._errors
+            errors=self._errors,
         )
 
 

@@ -4,10 +4,7 @@ from __future__ import annotations
 
 import logging
 
-from homeassistant.components.binary_sensor import (
-    BinarySensorDeviceClass,
-    BinarySensorEntity,
-)
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -32,9 +29,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up sensor."""
     coordinator = entry.runtime_data
-    entities = [
-        BboxBinarySensor(coordinator, description) for description in SENSOR_TYPES
-    ]
+    entities = [BboxBinarySensor(coordinator, description) for description in SENSOR_TYPES]
     async_add_entities(entities)
 
 

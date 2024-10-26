@@ -26,9 +26,7 @@ async def async_get_config_entry_diagnostics(
         with suppress(Exception):
             rsp = await func(*args)
             rslt = (
-                rsp
-                if isinstance(rsp, dict | list | set | float | int | str | tuple)
-                else vars(rsp)
+                rsp if isinstance(rsp, dict | list | set | float | int | str | tuple) else vars(rsp)
             )
 
         _datas.update({func.__name__: rslt})

@@ -2,17 +2,16 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
 import logging
+from datetime import timedelta
 from typing import Any
 
 from bboxpy import Bbox
-
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import CONF_DEFAULTS, CONF_HOST, CONF_PASSWORD, CONF_USE_TLS, DOMAIN, CONF_REFRESH_RATE
+from .const import CONF_DEFAULTS, CONF_HOST, CONF_PASSWORD, CONF_REFRESH_RATE, CONF_USE_TLS, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,10 +26,12 @@ class BboxDataUpdateCoordinator(DataUpdateCoordinator):
     ) -> None:
         """Class to manage fetching data API."""
         super().__init__(
-            hass, _LOGGER, name=DOMAIN,
+            hass,
+            _LOGGER,
+            name=DOMAIN,
             update_interval=timedelta(
                 seconds=entry.data.get(CONF_REFRESH_RATE, CONF_DEFAULTS[CONF_REFRESH_RATE])
-            )
+            ),
         )
         self.entry = entry
 
@@ -48,9 +49,7 @@ class BboxDataUpdateCoordinator(DataUpdateCoordinator):
         self.entry = entry
         await self.connect()
 
-        self.update_interval = timedelta(
-            seconds=entry.data[CONF_REFRESH_RATE]
-        )
+        self.update_interval = timedelta(seconds=entry.data[CONF_REFRESH_RATE])
         _LOGGER.debug("Coordinator refresh interval updated (%s)", self.update_interval)
 
         _LOGGER.debug("Force update")
@@ -61,9 +60,13 @@ class BboxDataUpdateCoordinator(DataUpdateCoordinator):
         try:
             bbox_info = self.check_list(await self.bbox.device.async_get_bbox_info())
             devices = await self.bbox.lan.async_get_connected_devices()
-            assert isinstance(devices, list), f"Failed to retrieved devices from Bbox API: {devices}"
+            assert isinstance(
+                devices, list
+            ), f"Failed to retrieved devices from Bbox API: {devices}"
             wan_ip_stats = self.check_list(await self.bbox.wan.async_get_wan_ip_stats())
-            parentalcontrol = self.check_list(await self.bbox.parentalcontrol.async_get_parental_control_service_state())
+            parentalcontrol = self.check_list(
+                await self.bbox.parentalcontrol.async_get_parental_control_service_state()
+            )
             # wan = self.check_list(await self.bbox.wan.async_get_wan_ip())
             # iptv_channels_infos = self.check_list(await self.bbox.iptv.async_get_iptv_info())
             # lan_stats = self.check_list(await self.bbox.lan.async_get_lan_stats())
@@ -89,6 +92,7 @@ class BboxDataUpdateCoordinator(DataUpdateCoordinator):
     def merge_objects(objs: Any) -> dict[str, Any]:
         """Merge objects return by the Bbox API"""
         assert isinstance(objs, list)
+
         def merge(a: dict, b: dict, path=[]):
             for key in b:
                 if key in a:
@@ -105,10 +109,15 @@ class BboxDataUpdateCoordinator(DataUpdateCoordinator):
                 else:
                     a[key] = b[key]
             return a
+
         result = objs[0]
-        assert isinstance(result, dict), f"The first element of the list is not a dict (but {type(result)}): {result}"
+        assert isinstance(
+            result, dict
+        ), f"The first element of the list is not a dict (but {type(result)}): {result}"
         for idx, obj in enumerate(objs[1:]):
-            assert isinstance(obj, dict), f"The {idx+2} element of the list is not a dict (but {type(obj)}): {obj}"
+            assert isinstance(
+                obj, dict
+            ), f"The {idx+2} element of the list is not a dict (but {type(obj)}): {obj}"
             result = merge(result, obj)
         return result
 
